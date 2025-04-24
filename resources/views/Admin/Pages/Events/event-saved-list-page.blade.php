@@ -45,31 +45,42 @@
             @if($events->isNotEmpty())
                 <div class="row align-items-start">
                     @foreach($events as $event)
-                        <div class="col-4 col-sm-6 col-m-6 col-xl-6 col-xxl-4">
-                            <a href="{{ route('event-saved-view-page', $event->event_id) }}" class="text-decoration-none text-dark">
-                                <div class="d-flex mb-3">
-                                    <!-- Calendar Icon -->
-                                    <div class="calendar-box text-center">
-                                        <div class="calendar-month">
-                                            {{ \Carbon\Carbon::parse($event->event_date)->format('M') }}
+                            @php
+                                $event_date = \Carbon\Carbon::parse($event->event_date);
+                                $days_left = (int) now()->diffInDays($event_date, false);
+                            @endphp
+                            <div class="col-4 col-sm-6 col-m-6 col-xl-6 col-xxl-4">
+                                <a href="{{ route('event-saved-view-page', $event->event_id) }}" class="text-decoration-none text-dark">
+                                    <div class="d-flex mb-3">
+                                        <!-- Calendar Icon -->
+                                        <div class="calendar-box text-center">
+                                            <div class="calendar-month">
+                                                {{ \Carbon\Carbon::parse($event->event_date)->format('M') }}
+                                            </div>
+                                            <div class="calendar-day">
+                                                {{ \Carbon\Carbon::parse($event->event_date)->format('d') }}
+                                            </div>
                                         </div>
-                                        <div class="calendar-day">
-                                            {{ \Carbon\Carbon::parse($event->event_date)->format('d') }}
-                                        </div>
-                                    </div>
 
-                                    <div class="ms-2">
-                                        <h3 class="text-primary fw-bold mb-0">{{ $event->event_title }}</h3>
-                                        <small class="text-muted">Organized by {{ $event->event_organizer }}</small>
-                                        <div class="text-dark mt-1"><strong>Time:</strong> {{ $event->event_time_start }}</div>
-                                        <div class="text-dark"><strong>Venue:</strong> {{ $event->event_venue }}</div>
-                                        <div class="text-dark"><strong>{{ $event->event_audience }}</strong> are invited!</div>
-                                        <small class="text-muted fst-italic mt-2"> posted
-                                            {{ $event->created_at->diffForHumans() }}</small>
+                                        <div class="ms-2">
+                                            <h3 class="text-primary fw-bold mb-0">{{ $event->event_title }}</h3>
+                                            <small class="text-muted">Organized by {{ $event->event_organizer }}</small>
+                                            <div class="text-dark mt-1"><strong>Time:</strong> {{ $event->event_time_start }}</div>
+                                            <div class="text-dark"><strong>Venue:</strong> {{ $event->event_venue }}</div>
+                                            <div class="text-dark"><strong>{{ $event->event_audience }}</strong> are invited!</div>
+                                            <small class="fst-italic mt-2 d-block text-danger fw-bold">
+                                                @if ($days_left > 0)
+                                                    {{ $days_left }} day{{ $days_left > 1 ? 's' : '' }} left
+                                                @elseif ($days_left === 0)
+                                                    Happening today
+                                                @else
+                                                    Event ended {{ abs($days_left) }} day{{ abs($days_left) > 1 ? 's' : '' }} ago
+                                                @endif
+                                            </small>
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-                        </div>
+                                </a>
+                            </div>
                     @endforeach
                 </div>
             @else

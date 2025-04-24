@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Mazer Admin Dashboard</title>
+    <title>Event Scheduler</title>
 
     <link rel="shortcut icon" href="{{ asset('/assets/compiled/svg/favicon.svg') }}" type="image/x-icon">
     <link rel="shortcut icon"
@@ -27,7 +27,7 @@
     <link rel="stylesheet"
         href="{{ asset('assets/extensions/filepond-plugin-image-preview/filepond-plugin-image-preview.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/extensions/toastify-js/src/toastify.css') }}">
-    </body>
+
 </head>
 
 <body>
@@ -86,6 +86,7 @@
     <script src="{{ asset('assets/extensions/toastify-js/src/toastify.js') }}"></script>
     <script src="{{ asset('assets/static/js/pages/filepond.js') }}"></script>
 
+
     <script>
         // If you want to use tooltips in your project, we suggest initializing them globally
         // instead of a "per-page" level.
@@ -96,7 +97,7 @@
             })
         }, false);
     </script>
-
+    @stack('scripts')
 </body>
 
 </html>

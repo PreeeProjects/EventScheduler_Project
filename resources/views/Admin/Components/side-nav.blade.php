@@ -110,7 +110,7 @@
                 </li>
 
                 <li class="sidebar-item ">
-                    <a href="{{ route('event-saved-list-page') }}" class="sidebar-link">
+                    <a href="{{ route('event-history') }}" class="sidebar-link">
                         <i class="bi bi-book"></i>
                         <span>History </span>
                     </a>

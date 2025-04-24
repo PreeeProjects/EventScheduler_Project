@@ -67,12 +67,18 @@
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <a id="downloadBtn{{ $event->event_id }}" class="btn btn-success" download>
+                                        <i class="bi bi-download me-2"></i>
+                                        Download Image
+                                    </a>
                                 </div>
+
                             </div>
                         </div>
                     </div>
                 @endif
             @endforeach
+
         @else
             <div class="text-center mt-3 mb-3">
                 <h3>No Photos</h3>
@@ -80,5 +86,27 @@
             </div>
         @endif
     </div>
-
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            @foreach($events as $event)
+                const carousel{{ $event->event_id }} = document.querySelector(`#carousel{{ $event->event_id }}`);
+                const downloadBtn{{ $event->event_id }} = document.querySelector(`#downloadBtn{{ $event->event_id }}`);
+
+                if (carousel{{ $event->event_id }} && downloadBtn{{ $event->event_id }}) {
+                    carousel{{ $event->event_id }}.addEventListener('slid.bs.carousel', () => {
+                        const activeItem = carousel{{ $event->event_id }}.querySelector('.carousel-item.active img');
+                        downloadBtn{{ $event->event_id }}.setAttribute('href', activeItem.getAttribute('src'));
+                    });
+
+                    const initialImg = carousel{{ $event->event_id }}.querySelector('.carousel-item.active img');
+                    if (initialImg) {
+                        downloadBtn{{ $event->event_id }}.setAttribute('href', initialImg.getAttribute('src'));
+                    }
+                }
+            @endforeach
+                                                                                                                        });
+    </script>
+@endpush

@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Session;
 use Carbon\Carbon;
 use App\Mail\MailNotification;
 use App\Models\User;
 use App\Models\EventModel;
-use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
@@ -158,7 +159,6 @@ class AdminController extends Controller
     public function EventSavedListPage()
     {
         $events = EventModel::where('status', '1')->get();
-
         return view('Admin.Pages.Events.event-saved-list-page', compact('events'));
     }
 
@@ -192,11 +192,66 @@ class AdminController extends Controller
 
     public function EventPhotos()
     {
-        $events = EventModel::where('status', '0')
-            ->where('event_privacy', '0')
-            ->get();
-
+        $events = EventModel::where('status', '0')->where('event_privacy', '0')->get();
         return view('admin.pages.events.event-photos', compact('events'));
+    }
+
+    public function EventHistory()
+    {
+        $events = EventModel::where('status', '3')->orderBy('event_date', 'asc')->get();
+        return view('Admin.Pages.Events.event-history-list', compact('events'));
+    }
+
+    public function EventtHistoryView($id)
+    {
+        $events = EventModel::where('event_id', $id)->first();
+        $event = EventModel::where('event_id', '!=', $events->event_id)->where('status', '0')->where('event_privacy', '0')->get();
+        $images = json_decode($events->event_images);
+        return view('admin.pages.events.event-history-view', compact('events', 'event'));
+    }
+
+    public function EventHistoryEvent($id)
+    {
+        EventModel::where('event_id', $id)->delete();
+        return redirect('event-history');
+    }
+
+    public function EventHistoryUploadImages(Request $request, $id)
+    {
+        $event = EventModel::where('event_id', $id)->first();
+
+        $request->validate([
+            'event_history_images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        $imagePaths = [];
+
+        // Prepare event title for folder name
+        $event_title = $event->event_title;
+
+        if ($request->hasFile('event_history_images')) {
+            foreach ($request->file('event_history_images') as $image) {
+                $filename = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+                $path = public_path("uploads/$event_title");
+
+                if (!File::exists($path)) {
+                    File::makeDirectory($path, 0755, true);
+                }
+
+                $image->move($path, $filename);
+                $imagePaths[] = "uploads/$event_title/$filename";
+            }
+        }
+
+        // Merge with existing images
+        $existingImages = json_decode($event->event_images, true) ?? [];
+        $updatedImages = array_merge($existingImages, $imagePaths);
+
+        $event->update([
+            'event_images' => json_encode($updatedImages),
+        ]);
+
+        return back()->with('success', 'Images uploaded successfully!');
     }
 
 }

@@ -52,33 +52,33 @@
                             <div class="d-flex mb-3">
                                 <div class="calendar-box text-center">
                                     <div class="calendar-month">
-                                        {{ \Carbon\Carbon::parse($event->event_date)->format('M') }}
+                                        {{ \Carbon\Carbon::parse($events->event_date)->format('M') }}
                                     </div>
                                     <div class="calendar-day">
-                                        {{ \Carbon\Carbon::parse($event->event_date)->format('d') }}
+                                        {{ \Carbon\Carbon::parse($events->event_date)->format('d') }}
                                     </div>
                                 </div>
                                 <div class="ms-2">
-                                    <h2 class="text-primary fw-bold mb-0">{{ $event->event_title }}</h2>
-                                    <small class="text-muted fs-6">Organized by {{ $event->event_organizer }}</small>
+                                    <h2 class="text-primary fw-bold mb-0">{{ $events->event_title }}</h2>
+                                    <small class="text-muted fs-6">Organized by {{ $events->event_organizer }}</small>
                                 </div>
                             </div>
                         </div>
                         <div class="col-xl-6 col-md-12 text-end mt-4 d-flex justify-content-end gap-2">
-                            <div>
-                                <a href="{{ route('event-edit-page', $event->event_id) }}"
-                                    class="btn btn-outline-secondary">
-                                    <i class="bi bi-pen-fill me-1"></i>Edit Event
-                                </a>
-                            </div>
-                            <form action="{{ route('event-delete', $event->event_id) }}" method="POST"
+                            <form action="{{ route('event-history-delete', $events->event_id) }}" method="POST"
                                 onsubmit="return confirm('Are you sure you want to delete this saved event?');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-danger">
-                                    <i class="bi bi-x-circle me-1"></i>Delete Event
+                                <button type="submit" class="btn btn-outline-danger">
+                                    <i class="bi bi-trash me-2"></i>Delete
                                 </button>
                             </form>
+                            <div>
+                                <button type="submit" class="btn btn-success" data-bs-toggle="modal"
+                                    data-bs-target="#exampleModalCenter">
+                                    <i class="bi bi-upload me-2"></i>Upload Photos
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -89,13 +89,13 @@
         <div class="col-lg-8">
             <div class="card mb-3">
                 <div class="card-body">
-                    <h3>{{ $event->event_title }}</h3>
+                    <h3>{{ $events->event_title }}</h3>
                     <hr>
-                    <p class="fs-5" style="text-align: justify;">{{ $event->event_description }}</p>
+                    <p class="fs-5" style="text-align: justify;">{{ $events->event_description }}</p>
                 </div>
             </div>
 
-            @php $images = json_decode($event->event_images, true); @endphp
+            @php $images = json_decode($events->event_images, true); @endphp
             @if($images)
                 <div class="card">
                     <div class="card-body">
@@ -104,15 +104,9 @@
                         <div class="col-md-12 mb-4">
                             <div class="card">
                                 <div class="card-body">
-                                    <a href="#" data-bs-toggle="modal" data-bs-target="#galleryModal{{ $event->event_id }}">
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#galleryModal{{ $events->event_id }}">
                                         <img class="w-100" src="{{ asset($images[0]) }}" alt="Event Photo">
                                     </a>
-                                    <div class="d-flex align-items-center justify-content-between mt-3">
-                                        <h4 class="mb-0">{{ $event->event_title }}</h4>
-                                        <a href="{{ route('event-view-page', $event->event_id) }}">
-                                            <i class="bi bi-eye text-end fs-4 me-2"></i>
-                                        </a>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -125,53 +119,14 @@
             <div class="card mb-3">
                 <div class="card-body">
                     <h5><i class="bi bi-calendar me-2"></i>Date & Time</h5>
-                    <p class="mb-0">{{ $event->event_date }}</p>
-                    <p>{{ $event->event_time_start }} - {{ $event->event_time_end }}</p>
+                    <p class="mb-0">{{ $events->event_date }}</p>
+                    <p>{{ $events->event_time_start }} - {{ $events->event_time_end }}</p>
 
                     <h5 class="mt-3"><i class="bi bi-map me-2"></i>Location</h5>
-                    <p>{{ $event->event_venue }}</p>
+                    <p>{{ $events->event_venue }}</p>
 
                     <h5 class="mt-3"><i class="bi bi-person me-2"></i>Audience</h5>
-                    <p>{{ $event->event_audience }}</p>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-body">
-                    <h4>Event/s you may like</h4>
-                    <hr>
-                    @if($events && $events->isNotEmpty())
-                        @foreach($events as $related)
-                            @if($related->event_id != $event->event_id)
-                                <a href="{{ route('event-view-page', $related->event_id) }}" class="text-decoration-none text-dark">
-                                    <div class="d-flex mb-3">
-                                        <div class="calendar-box text-center">
-                                            <div class="calendar-month">
-                                                {{ \Carbon\Carbon::parse($related->event_date)->format('M') }}
-                                            </div>
-                                            <div class="calendar-day">
-                                                {{ \Carbon\Carbon::parse($related->event_date)->format('d') }}
-                                            </div>
-                                        </div>
-                                        <div class="ms-2">
-                                            <h3 class="text-primary fw-bold mb-0">{{ $related->event_title }}</h3>
-                                            <small class="text-muted">Organized by {{ $related->event_organizer }}</small>
-                                            <div class="text-dark mt-1"><strong>Time:</strong> {{ $related->event_time_start }}</div>
-                                            <div class="text-dark"><strong>Venue:</strong> {{ $related->event_venue }}</div>
-                                            <div class="text-dark"><strong>{{ $related->event_audience }}</strong> are invited!</div>
-                                            <small class="text-muted fst-italic mt-2">Posted
-                                                {{ $related->created_at->diffForHumans() }}</small>
-                                        </div>
-                                    </div>
-                                </a>
-                            @endif
-                        @endforeach
-                    @else
-                        <div class="text-center mt-5 mb-5">
-                            <h3 class="mb-0">NO OTHER EVENT</h3>
-                            <small class="fst-italic">Currently, there are no events listed to display.</small>
-                        </div>
-                    @endif
+                    <p>{{ $events->event_audience }}</p>
                 </div>
             </div>
         </div>
@@ -179,16 +134,16 @@
 
     {{-- Image Modal with Carousel --}}
     @if($images)
-        <div class="modal fade" id="galleryModal{{ $event->event_id }}" tabindex="-1" role="dialog"
-            aria-labelledby="galleryModalLabel{{ $event->event_id }}" aria-hidden="true">
+        <div class="modal fade" id="galleryModal{{ $events->event_id }}" tabindex="-1" role="dialog"
+            aria-labelledby="galleryModalLabel{{ $events->event_id }}" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">{{ $event->event_title }}</h5>
+                        <h5 class="modal-title">{{ $events->event_title }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div id="carousel{{ $event->event_id }}" class="carousel slide" data-bs-ride="carousel">
+                        <div id="carousel{{ $events->event_id }}" class="carousel slide" data-bs-ride="carousel">
                             <div class="carousel-inner">
                                 @foreach($images as $index => $img)
                                     <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
@@ -196,19 +151,19 @@
                                     </div>
                                 @endforeach
                             </div>
-                            <button class="carousel-control-prev" type="button" data-bs-target="#carousel{{ $event->event_id }}"
-                                data-bs-slide="prev">
+                            <button class="carousel-control-prev" type="button"
+                                data-bs-target="#carousel{{ $events->event_id }}" data-bs-slide="prev">
                                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                             </button>
-                            <button class="carousel-control-next" type="button" data-bs-target="#carousel{{ $event->event_id }}"
-                                data-bs-slide="next">
+                            <button class="carousel-control-next" type="button"
+                                data-bs-target="#carousel{{ $events->event_id }}" data-bs-slide="next">
                                 <span class="carousel-control-next-icon" aria-hidden="true"></span>
                             </button>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <a id="downloadBtn{{ $event->event_id }}" class="btn btn-success" download>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                        <a id="downloadBtn{{ $events->event_id }}" class="btn btn-success" download>
                             <i class="bi bi-download me-2"></i>Download Image
                         </a>
                     </div>
@@ -217,14 +172,54 @@
         </div>
     @endif
 
+    <!-- Upload Photos Modal -->
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-centered modal-dialog-scrollable" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalCenterTitle">Upload Photos/s
+                    </h5>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <i data-feather="x"></i>
+                    </button>
+                </div>
+                <form action="{{ route('event-history-upload-images', $events->event_id) }}" method="POST"
+                    enctype="multipart/form-data">
+                    @csrf
+                    @method('PATCH') {{-- Since your route uses PATCH method --}}
+
+                    <div class="modal-body">
+                        <div>
+                            <p class="card-text"> Upload images to share your experience!</p>
+                            <input type="file" class="multiple-files-filepond" multiple name="event_history_images[]">
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light-secondary" data-bs-dismiss="modal">
+                            <i class="bx bx-x d-block d-sm-none"></i>
+                            <span class="d-none d-sm-block">Close</span>
+                        </button>
+
+                        <button type="submit" class="btn btn-success ms-1">
+                            <i class="bx bx-check d-block d-sm-none"></i>
+                            <span class="d-none d-sm-block">Upload</span>
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             @if($images)
-                const carousel = document.querySelector('#carousel{{ $event->event_id }}');
-                const downloadBtn = document.querySelector('#downloadBtn{{ $event->event_id }}');
+                const carousel = document.querySelector('#carousel{{ $events->event_id }}');
+                const downloadBtn = document.querySelector('#downloadBtn{{ $events->event_id }}');
 
                 function updateDownloadLink() {
                     const activeImg = carousel.querySelector('.carousel-item.active img');
@@ -236,6 +231,6 @@
                 updateDownloadLink();
                 carousel.addEventListener('slid.bs.carousel', updateDownloadLink);
             @endif
-                                    });
+                                                                                                                                                                                                                                                                                            });
     </script>
 @endpush

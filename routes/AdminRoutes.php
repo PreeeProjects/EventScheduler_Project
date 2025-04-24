@@ -53,3 +53,15 @@ Route::patch('/publish-event/{id}', [AdminController::class, 'PublishEvent'])->n
 
 // E V E N T  P H O T O S
 Route::get('/event-photos', [AdminController::class, 'EventPhotos'])->name('event-photos');
+
+// E V E N T  H I S T O R Y
+Route::get('/event-history', [AdminController::class, 'EventHistory'])->name('event-history');
+
+// E V E N T  H I S T O R Y  V I E W
+Route::get('/event-history-view/{id}', [AdminController::class, 'EventtHistoryView'])->name('event-history-view');
+
+// E V E N T  H I S T O R Y  V I E W  D E L E T E
+Route::delete('/event-history-delete', [AdminController::class, 'EventHistoryDelete'])->name('event-history-delete');
+
+// E V E N T  H I S T O R Y U P L O A D  I M A G E S
+Route::patch('/event-history-upload-images/{id}', [AdminController::class, 'EventHistoryUploadImages'])->name('event-history-upload-images');
