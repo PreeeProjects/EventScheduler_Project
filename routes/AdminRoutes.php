@@ -27,7 +27,6 @@ Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $requ
     }
 
     $request->fulfill(); // Automatically sets email_verified_at
-    return redirect()->route('verification-success');
 })->middleware(['signed'])->name('verification-verify');
 
 // A C C O U N T  R E Q U E S T  M A I N P A G E
