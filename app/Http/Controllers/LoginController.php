@@ -6,7 +6,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
 use App\Mail\MailNotification;
+use App\Mail\CustomVerifyEmail;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Carbon;
 use App\Models\User;
 
 
@@ -32,8 +36,7 @@ class LoginController extends Controller
 
         if (!$check_email) {
             if ($password === $confirm_password) {
-                User::create([
-
+                $user = User::create([
                     'first_name' => $first_name,
                     'middle_name' => $middle_name,
                     'last_name' => $last_name,
@@ -43,13 +46,22 @@ class LoginController extends Controller
                     'password' => Hash::make($request->password),
                 ]);
 
-                Mail::to($email)->send(new MailNotification(
-                    'Account Approval Request',
-                    'Login.Emails.registered-account-email',
-                    ['name' => $first_name]
-                ));
+                // Mail::to($email)->send(new MailNotification(
+                //     'Account Approval Request',
+                //     'Login.Emails.registered-account-email',
+                //     ['name' => $first_name]
+                // ));
+                Auth::login($user);
 
-                return redirect()->to('/');
+                $verificationUrl = URL::temporarySignedRoute(
+                    'verification-verify',
+                    Carbon::now()->addMinutes(60),
+                    ['id' => $user->id, 'hash' => sha1($user->email)]
+                );
+
+                Mail::to($user->email)->send(new CustomVerifyEmail($user, $verificationUrl));
+
+                return redirect()->route('verification-notice');
             }
             return view('Login.Pages.register-page');
         }

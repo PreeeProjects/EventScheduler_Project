@@ -2,10 +2,33 @@
 
 use Illuminate\Support\Facades\Route;
 use App\HTTP\Controllers\AdminController;
-
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\Request;
 
 // D A S H B O A R D  P A G E
-Route::get('/dashboard', [AdminController::class, 'Dashboard'])->name('dashboard');
+// Route::get('/dashboard', [AdminController::class, 'Dashboard'])->name('dashboard');
+Route::get('/dashboard', [AdminController::class, 'Dashboard'])->middleware(['auth', 'verified']);
+
+// V E R I F I C A T I O N  N O T I C E
+Route::get('/email/verify', function () {
+    return view('Login.Pages.auth-verify-email');
+})->middleware(middleware: 'auth')->name('verification-notice');
+
+// R E S E N D  V E R I F I C A T I O N
+Route::post('/email/verification-notification', function (Request $request) {
+    $request->user()->sendEmailVerificationNotification();
+    return back()->with('message', 'Verification link sent!');
+})->middleware(['auth', 'throttle:6,1'])->name('verification-send');
+
+// E M A I L  V E R I F I C A T I O N
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    if ($request->user()->hasVerifiedEmail()) {
+        return redirect()->to('/');
+    }
+
+    $request->fulfill(); // Automatically sets email_verified_at
+    return redirect()->route('verification-success');
+})->middleware(['signed'])->name('verification-verify');
 
 // A C C O U N T  R E Q U E S T  M A I N P A G E
 Route::get('/account-request-page', [AdminController::class, 'AccountRequestPage'])->name('account-request-page');
